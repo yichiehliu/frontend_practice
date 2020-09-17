@@ -1,30 +1,38 @@
 import React from 'react';
 import ReactDom from "react-dom"
+import classNames from 'classnames'
 import "./index.css"
+import ximg from './img/x.png'
 // import AppComponent from "./AppComponent.js"
 
-function TaskList(props) {
-    console.log("props", props, "modes", props.handleChecked)
+function TaskList({ todos, mode, onChange, xClicked }) {
 
     let newTodo = []
-    if (props.state.mode === "All") {
-        newTodo = props.state.todos
-    } else if (props.state.mode === "Active") {
-        newTodo = props.state.todos.filter(eachTodo => !eachTodo.isCompleted)
-    } else if (props.state.mode === "Completed") {
-        newTodo = props.state.todos.filter(eachTodo => eachTodo.isCompleted)
+    if (mode === "All") {
+        newTodo = todos
+    } else if (mode === "Active") {
+        newTodo = todos.filter(eachTodo => !eachTodo.isCompleted)
+    } else if (mode === "Completed") {
+        newTodo = todos.filter(eachTodo => eachTodo.isCompleted)
     }
     return newTodo.map((eachTodo) => {
+        const checkboxClass = classNames('todo-app__item-detail', eachTodo.isCompleted ? "line-through" : "")
+        // const checkboxClass = classNames({
+        //     'todo-app__checkbox': true,
+        //     'line-through': eachTodo.isCompleted
+        // })
         return (<li key={eachTodo.id} className="todo-app__item">
-            <div className="todo-app__checkbox">
-                <input type="checkbox" onClick={props.handleChecked} />
-                <label>
+            <div className="todo-app__checkbox" >
+                <input type="checkbox" onChange={() => onChange(eachTodo.id)} checked={eachTodo.isCompleted} id={eachTodo.id} />
+                <label htmlFor={eachTodo.id}>
                 </label>
             </div>
-            <h1 className="todo-app__item-detail">{eachTodo.task}</h1>
-            <img src="./img/x.png" alt="" className="todo-app__item-x" />
-        </li>)
+            <h1 className={checkboxClass}>{eachTodo.task}</h1>
+            {/* 為什麼要加{}?? */}
+            <img src={ximg} alt="" className="todo-app__item-x" onClick={() => xClicked(eachTodo.id)} />
+        </li >)
     })
+
 
 }
 
@@ -58,6 +66,7 @@ class App extends React.Component {
     constructor() {
         super()
         this.state = {
+            idCounter: 0,
             input: "",
             // 初始都在ALL mode
             mode: "All",
@@ -72,15 +81,17 @@ class App extends React.Component {
         }
     }
     handleKeyPress = (event) => {
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && event.target.value != '') {
             console.log(event.target.value)
             const value = event.target.value
             this.setState(prevState => {
+                const idCounter = prevState.idCounter + 1
                 return {
-                    input: value,
+                    input: '',
+                    idCounter: idCounter,
                     mode: prevState.mode,
                     todos: [...prevState.todos, {
-                        id: prevState.todos.length,
+                        id: idCounter,
                         task: value,
                         isCompleted: false
                     }]
@@ -88,9 +99,30 @@ class App extends React.Component {
             })
         }
     }
+    // 為什麼這樣可以不需要bind??
+    handleInputChange = (e) => {
+        const value = e.target.value
+        this.setState({
+            input: value
+        })
+    }
     handleClick = (event) => {
         this.setState({ mode: event.target.name })
-        console.log(this.state.mode)
+    }
+
+    handleXClicked = (id) => {
+        let index = this.state.todos.findIndex(element => {
+            return element.id === id;
+        });
+        const updatedTodo = [...this.state.todos]
+
+        updatedTodo.splice(index, 1)
+        console.log("xclicked", updatedTodo, this.state.todos)
+        this.setState({
+            todos: updatedTodo
+        })
+
+
     }
     handleClear = (event) => {
         this.setState(prevState => {
@@ -101,25 +133,35 @@ class App extends React.Component {
         })
 
     }
-    handleChecked = (event) => {
-        console.log(123)
+    handleChecked = (id) => {
+        // 只copy值 reference還是一樣
+        let newTodos = [...this.state.todos];
+        let index = this.state.todos.findIndex(element => {
+            return element.id === id;
+        });
+        // new一個object
+        // 可以不要用newTodos[index]，直接用...this.state.todos[index]?
+        const updatedTodo = { ...newTodos[index], isCompleted: !newTodos[index].isCompleted };
+        // 這裡可以直接assign?? renference不是依樣ㄇ
+        newTodos[index] = updatedTodo;
+        console.log("copy arrays", this.state.todos, newTodos, updatedTodo)
+        this.setState({
+            todos: newTodos
+        })
     }
     render() {
-        let props = {
-            state: { ...this.state },
-            // handleChecked: { () => this.handleChecked }
-        }
         return (
             <div className="todo-app__root" >
                 <div className="todo-app__header">
                     <div className="todo-app__title">todos</div>
                 </div>
                 <section className="todo-app__main">
-                    <input className="todo-app__input" placeholder="What needs to be done?" onKeyPress={this.handleKeyPress} />
+                    <input className="todo-app__input" placeholder="What needs to be done?" onKeyPress={this.handleKeyPress} onChange={this.handleInputChange} value={this.state.input} />
                     <ul className="todo-app__list">
                         {/* 有改state，會自動重新render */}
                         {/* 為什麼兩個都要要加... */}
-                        <TaskList  {...props} />
+                        {/* 要傳入很多的話是再另一個變數?? */}
+                        <TaskList todos={this.state.todos} mode={this.state.mode} onChange={this.handleChecked} xClicked={this.handleXClicked} />
                     </ul>
                 </section>
                 <footer className="todo-app__footer">
@@ -128,7 +170,6 @@ class App extends React.Component {
                         <button name="All" onClick={this.handleClick}>All</button>
                         <button name="Active" onClick={this.handleClick}>Active</button>
                         <button name="Completed" onClick={this.handleClick}>Completed</button>
-
                         {/* <Button name="Active" onClick={this.handleClick}></Button>
                         <Button name="Completed" onClick={this.handleClick}></Button> */}
                     </ul>
