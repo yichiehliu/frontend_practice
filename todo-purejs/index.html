@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>TODO APP in pure JS</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="styles.css" />
+</head>
+
+<body>
+    <div class="todo-app__root">
+        <!-- 放到最外曾的component -->
+        <div class="todo-app__header">
+            <div class="todo-app__title">todos</div>
+        </div>
+        <section class="todo-app__main">
+
+            <input class="todo-app__input" placeholder="What needs to be done?">
+            </input>
+
+            <ul class="todo-app__list" id="todo-list">
+            </ul>
+
+        </section>
+        <footer class="todo-app__footer" id="todo-footer">
+            <div class="todo-app__total" id="todo-count">0 left</div>
+            <ul class="todo-app__view-buttons">
+                <li>
+                    <button id="button-all">All</button>
+                </li>
+                <li>
+                    <button id="button-act">Active</button>
+                </li>
+                <li>
+                    <button id="button-complete">Completed</button>
+                </li>
+            </ul>
+            <div class="todo-app__clean">
+                <button id="clean-done">Clear completed</button>
+            </div>
+
+        </footer>
+    </div>
+
+    <script src="statejs.js"></script>
+</body>
+
+</html>
