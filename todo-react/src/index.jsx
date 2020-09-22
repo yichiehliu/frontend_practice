@@ -5,7 +5,27 @@ import "./index.css"
 import ximg from './img/x.png'
 // import AppComponent from "./AppComponent.js"
 
-function TaskList({ todos, mode, onChange, xClicked }) {
+const Task = ({ id, task, isCompleted, onChange, onDeleteTask }) => {
+    const checkboxClass = classNames({
+        'todo-app__item-detail': true,
+        'line-through': isCompleted
+    });
+
+    return (
+        <li key={id} className="todo-app__item">
+            <div className="todo-app__checkbox" >
+                <input type="checkbox" onChange={() => onChange(id)} checked={isCompleted} id={id} />
+                <label htmlFor={id}>
+                </label>
+            </div>
+            <h1 className={checkboxClass}>{task}</h1>
+            {/* 為什麼要加{}?? */}
+            <img src={ximg} alt="" className="todo-app__item-x" onClick={() => onDeleteTask(id)} />
+        </li >
+    );
+};
+
+function TaskList({ todos, mode, onChange, deleteTask }) {
 
     let newTodo = []
     if (mode === "All") {
@@ -15,22 +35,12 @@ function TaskList({ todos, mode, onChange, xClicked }) {
     } else if (mode === "Completed") {
         newTodo = todos.filter(eachTodo => eachTodo.isCompleted)
     }
+    const newTodos = 
+        mode === 'Active' ? todos.filter(eachTodo => !eachTodo.isCompleted) :
+        mode === 'Completed' ? newTodo = todos.filter(eachTodo => eachTodo.isCompleted) :
+        todos;
     return newTodo.map((eachTodo) => {
-        const checkboxClass = classNames('todo-app__item-detail', eachTodo.isCompleted ? "line-through" : "")
-        // const checkboxClass = classNames({
-        //     'todo-app__checkbox': true,
-        //     'line-through': eachTodo.isCompleted
-        // })
-        return (<li key={eachTodo.id} className="todo-app__item">
-            <div className="todo-app__checkbox" >
-                <input type="checkbox" onChange={() => onChange(eachTodo.id)} checked={eachTodo.isCompleted} id={eachTodo.id} />
-                <label htmlFor={eachTodo.id}>
-                </label>
-            </div>
-            <h1 className={checkboxClass}>{eachTodo.task}</h1>
-            {/* 為什麼要加{}?? */}
-            <img src={ximg} alt="" className="todo-app__item-x" onClick={() => xClicked(eachTodo.id)} />
-        </li >)
+        return <Task {...eachTodo} />
     })
 
 
@@ -60,6 +70,10 @@ function Button(props) {
             <button>{props.name}</button>
         </li>
     )
+}
+
+class Input extends React.Component {
+    state = {}
 }
 
 class App extends React.Component {
@@ -110,7 +124,7 @@ class App extends React.Component {
         this.setState({ mode: event.target.name })
     }
 
-    handleXClicked = (id) => {
+    handleDeleteTask = (id) => {
         let index = this.state.todos.findIndex(element => {
             return element.id === id;
         });
@@ -150,6 +164,12 @@ class App extends React.Component {
         })
     }
     render() {
+        const { todos, mode } = this.state;
+        const newTodos = 
+            mode === 'Active' ? todos.filter(eachTodo => !eachTodo.isCompleted) :
+            mode === 'Completed' ? todos.filter(eachTodo => eachTodo.isCompleted) :
+            todos;
+
         return (
             <div className="todo-app__root" >
                 <div className="todo-app__header">
@@ -161,13 +181,16 @@ class App extends React.Component {
                         {/* 有改state，會自動重新render */}
                         {/* 為什麼兩個都要要加... */}
                         {/* 要傳入很多的話是再另一個變數?? */}
-                        <TaskList todos={this.state.todos} mode={this.state.mode} onChange={this.handleChecked} xClicked={this.handleXClicked} />
+                        {/* <TaskList todos={this.state.todos} mode={this.state.mode} onChange={this.handleChecked} onDeleteTask={this.handleDeleteTask} /> */}
+                        {newTodos.map((eachTodo) => {
+                            return <Task {...eachTodo} onChange={this.handleChecked} onDeleteTask={this.handleDeleteTask} />
+                        })}
                     </ul>
                 </section>
                 <footer className="todo-app__footer">
                     <div className="todo-app__total">{this.state.todos.length} left</div>
                     <ul className="todo-app__view-buttons">
-                        <button name="All" onClick={this.handleClick}>All</button>
+                        <button name="All" onClick={() => this.handleClick('All')}>All</button>
                         <button name="Active" onClick={this.handleClick}>Active</button>
                         <button name="Completed" onClick={this.handleClick}>Completed</button>
                         {/* <Button name="Active" onClick={this.handleClick}></Button>
