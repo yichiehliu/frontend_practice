@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import HomePage from './pages/homepage/homepage.jsx'
 import ShopPage from './pages/shop/shop.jsx'
+import Header from './components/header/header'
 
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 
@@ -20,6 +21,7 @@ function App() {
   return ( 
     <div>
       <BrowserRouter>
+        <Header />
         <Switch>
           <Route exact path='/' component={HomePage} />
           <Route path='/shop' component={ShopPage} />         
